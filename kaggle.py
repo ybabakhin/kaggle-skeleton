@@ -1,15 +1,23 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import KFold, StratifiedKFold
 import os
-from models_zoo import BesXGboost, BesLightGBM, BesCatBoost
+from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.linear_model import LogisticRegression
-import sklearn.metrics as metrics
-from target_encoding import TargetEncoding
 from sklearn.preprocessing import LabelEncoder
+import sklearn.metrics as metrics
+from models_zoo import BesXGboost, BesLightGBM, BesCatBoost
+from target_encoding import TargetEncoding
 
 
 class Kaggle:
+    """
+    Class skeleton for competitions in classic Machine Learning.
+
+    It includes:
+        * Data Preparation
+        * Feature Engineering
+        * Models Stacking
+    """
 
     def __init__(self, data_path, metric='auc', mode=0):
         self.data_path = data_path
@@ -24,6 +32,7 @@ class Kaggle:
 
     @staticmethod
     def get_metric(metric):
+        """Returns metric evaluation"""
         if metric == 'auc':
             return metrics.roc_auc_score, True
         if metric == 'mae':
@@ -57,6 +66,7 @@ class Kaggle:
                 idx += 1
 
     def general_feature_engineering(self, train_only=True):
+        """Feature engineering, which does NOT depend on train/test split"""
         if train_only:
             df = self.df_train
         else:
@@ -97,6 +107,7 @@ class Kaggle:
             self.df_test = df.tail(self.df_test.shape[0])
 
     def _categorical_preprocess(self, df, cat_feature, how='ohe'):
+        """Categorical variables preprocess"""
         assert how in ['ohe_encoder', 'label_encoder', 'target_encoder']
 
         if how == 'ohe_encoder':
@@ -117,6 +128,7 @@ class Kaggle:
         return df
 
     def fold_feature_engineering(self, train, test):
+        """Feature engineering, which DOES depend on train/test split"""
 
         df = pd.concat([train, test])
 
@@ -150,6 +162,7 @@ class Kaggle:
 
 
     def get_predictions(self, model_name, params, X_train, y_train, X_test):
+        """Function to return predictions given data and model name"""
 
         if model_name == 'xgboost':
             model = BesXGboost(params=params, metric=self.metric, maximize=self.maximize)
@@ -303,7 +316,7 @@ class Kaggle:
         ids_test[os.path.split(preds_path)[-1].split('.')[0]] = pred
         ids_test.to_csv(preds_path, index=False)
 
-        return ids_test
+        return ids_test, model
 
     def get_stacked_model_test_prediction(self, model_name='logistic_regression', params=None,
                                           prev_level_test_fold = 'test_preds_level_1/', preds_path = ''):
@@ -342,4 +355,4 @@ class Kaggle:
         ids_test[os.path.split(preds_path)[-1].split('.')[0]] = pred
         ids_test.to_csv(preds_path, index=False)
 
-        return ids_test
+        return ids_test, model

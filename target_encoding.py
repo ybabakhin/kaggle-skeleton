@@ -4,6 +4,10 @@ from sklearn.model_selection import KFold
 
 
 class TargetEncoding(object):
+    """
+    Mean Target Encoding.
+    One of the best ways to encode high-cardinality categorical features
+    """
 
     def __init__(self, C=10):
         self.C = C
@@ -40,6 +44,3 @@ class TargetEncoding(object):
         data_test = data_test.merge(values, how="left", left_on=feature, right_index=True).fillna(global_mean)
         data_test.drop(feature, 1, inplace=True)
         return data_train, data_test
-
-
-

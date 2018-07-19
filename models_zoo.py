@@ -386,4 +386,3 @@ class BesCatBoost:
     @staticmethod
     def find_best_params(kag):
         pass
-
